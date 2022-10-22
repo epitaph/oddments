@@ -1,0 +1,57 @@
+#!/bin/sh
+
+# linewrap
+# 
+# Wrap input lines, limiting width. Width is specified by -w nnn or 72
+# by default.
+# 
+# There's probably a unix util that'll do this, but I can't find it...
+# Easy enough to do in the shell ;)
+# 
+# Copyright (C) Chrissy Jackson 2022 for what it's worth. See associated
+# LICENSE file for licensing
+
+width=72
+
+linewrap() {
+  local IFS=' '
+  while read line
+  do
+    pos=0
+    for word in `echo $line`
+    do
+      if [ $((pos+${#word})) -gt $width ]
+      then
+        echo
+        pos=0
+      else
+        if [ $pos -ne 0 ]
+        then
+          echo -n ' '
+          pos=$((pos+1))
+        fi
+      fi
+      echo -n "$word"
+      pos=$((pos+${#word}))
+    done
+    echo
+  done
+}
+
+if [ "$1" == -w ]
+then
+  width="$2"
+  shift 2
+fi
+if [ $# -ne 0 ]
+then
+  for file
+  do
+    exec <$file
+    linewrap
+    echo
+  done
+else
+  linewrap
+fi
+
